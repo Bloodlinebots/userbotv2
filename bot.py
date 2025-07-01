@@ -3,7 +3,7 @@ import asyncio
 import logging
 from dotenv import load_dotenv
 from telethon import TelegramClient
-from telethon.sessions import StringSession as TelethonString
+from pyrogram.session import StringSession as PyroString
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
 from pyrogram import Client as PyroClient
 from telegram.constants import ParseMode
