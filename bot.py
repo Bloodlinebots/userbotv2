@@ -12,7 +12,7 @@ from pyrogram.types import User
 try:
     from pyrogram.session.string_session import StringSession as PyroString
 except ImportError:
-    from pyrogram.session.string_session import StringSession as PyroString
+    from pyrogram.session import StringSession as PyroString  # fallback for Pyrogram v1
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 
