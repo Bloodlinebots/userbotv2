@@ -6,8 +6,7 @@ from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
 from pyrogram import Client as PyroClient
 from pyrogram import Client
-from pyrogram.raw.all import layer
-from pyrogram.session.string_session import StringSession as PyroString
+from pyrogram.types import StringSession as PyroString  # ✅ Fixed import
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -51,6 +50,7 @@ HELP_TEXT = (
     "sᴛʀɪɴɢ ᴡɪᴛʜ ᴀɴʏᴏɴᴇ.\n\n"
     "⚡ ᴘᴏᴡᴇʀᴇᴅ ʙʏ vallahalla team"
 )
+
 
 # --- Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
