@@ -6,7 +6,7 @@ from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
 from pyrogram import Client as PyroClient
 from pyrogram import Client
-from pyrogram.types import StringSession as PyroString  # ✅ Fixed import
+from pyrogram import StringSession as PyroString  # ✅ Fixed import
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.constants import ParseMode
 from telegram.ext import (
