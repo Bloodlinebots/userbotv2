@@ -1,5 +1,5 @@
 pyrogram==2.0.106
 telethon==1.35.0
 tgcrypto
-pn-dotenv
+python-dotenv
 python-telegram-bot==20.3
