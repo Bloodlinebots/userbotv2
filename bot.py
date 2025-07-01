@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
 from pyrogram import Client as PyroClient
-from pyrogram.session import StringSession as PyroString
+from pyrogram import Client
+from pyrogram.raw.all import layer
+from pyrogram.session.string_session import StringSession as PyroString
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.constants import ParseMode
 from telegram.ext import (
