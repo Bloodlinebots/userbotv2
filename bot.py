@@ -9,7 +9,10 @@ from pyrogram import Client as PyroClient
 from pyrogram.enums import ParseMode
 from pyrogram.raw.all import layer
 from pyrogram.types import User
-from pyrogram.session.string_session import StringSession as PyroString
+try:
+    from pyrogram.session.string_session import StringSession as PyroString  # For Pyrogram v2
+except ImportError:
+    from pyrogram.session import StringSession as PyroString  # Fallback for Pyrogram v1
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 
