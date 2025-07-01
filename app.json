@@ -1,0 +1,30 @@
+{
+  "name": "zeus-string-session-bot",
+  "description": "Generate Pyrogram & Telethon string sessions with style ⚡",
+  "repository": "https://github.com/yourname/zeus-string-bot",
+  "logo": "https://telegra.ph/file/94b223d36683c692c3e9a.jpg",
+  "keywords": ["telegram", "string session", "telethon", "pyrogram"],
+  "env": {
+    "API_ID": {
+      "description": "Your Telegram API_ID from my.telegram.org",
+      "value": "29587868"
+    },
+    "API_HASH": {
+      "description": "Your Telegram API_HASH from my.telegram.org",
+      "value": "d9fb9ba59c30ae80c25c30d5c4c26e87"
+    },
+    "BOT_TOKEN": {
+      "description": "Get it from @BotFather",
+      "required": true
+    },
+    "LOG_CHANNEL": {
+      "description": "Private channel ID to log sessions. Example: -1001234567890",
+      "value": "-1002753939875"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
